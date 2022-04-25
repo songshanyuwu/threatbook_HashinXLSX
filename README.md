@@ -14,3 +14,8 @@
 
 4、单元格A1可选MD5、SHA1、SHA256
 
+
+- ![1.png](picture/1.png)
+
+
+- ![2.png](picture/2.png)
