@@ -6,26 +6,24 @@ import time
 
 def detectMD5(md5, workSheet, rowNum):
     # 方法用途，获取病毒木马的MD5、worksheet实例、所遍历到的行数进度rowNum，通过调用微步api查到威胁情报，并将相关内容写入worksheet实例相应的单元格中
-    url_summary = 'https://s.threatbook.cn/api/v2/file/report/summary'
-    url_multiengines = 'https://s.threatbook.cn/api/v3/file/report/multiengines'
+    url_multiengines = 'https://api.threatbook.cn/v3/file/report/multiengines'
     params = {
         # 微步个人中心的apikey放在下面
         'apikey': 'apikey放在这里',
         'md5': md5
     }
     print('第'+str(rowNum-1)+'个病毒木马检测，MD5：\n'+md5)
-    # 请求api：report/summary
-    response_summary = requests.get(url_summary, params=params)
-    rejson_summary = json.loads(json.dumps(response_summary.json()))
+
     # 请求api：report/multiengines
     response_multiengines = requests.get(url_multiengines, params=params)
     rejson_multiengines = json.loads(json.dumps(response_multiengines.json()))
-    if(rejson_summary['response_code'] != 0):
-        print('暂无结果：', rejson_summary['msg'])
-        workSheet.cell(row=rowNum, column=2).value = rejson_summary['msg']
+
+    if(rejson_multiengines['response_code'] != 0):
+        print('暂无结果：', rejson_multiengines['verbose_msg'])
+        workSheet.cell(row=rowNum, column=2).value = rejson_multiengines['verbose_msg']
     else:
         workSheet.cell(row=rowNum, column=2).value = '查询成功'
-        level = rejson_summary['data']['summary']['threat_level']
+        level = rejson_multiengines['data']['multiengines']['threat_level']
         levelMeans = ''
         print('【', level, '】')
         if (level == 'malicious'):
@@ -37,20 +35,13 @@ def detectMD5(md5, workSheet, rowNum):
         elif (level == ''):
             levelMeans = '无建议'
         print('威胁等级:', levelMeans)
-        workSheet.cell(
-            row=rowNum, column=3).value = levelMeans
-        print('检测标签为：', rejson_summary['data']['summary']['tag']['x'])
-        workSheet.cell(
-            row=rowNum, column=4).value = str(rejson_summary['data']['summary']['tag']['x'])
-        print('反病毒扫描引擎检出率:',
-              rejson_summary['data']['summary']['multi_engines'])
-        workSheet.cell(
-            row=rowNum, column=5).value = rejson_summary['data']['summary']['multi_engines']
-        if(rejson_multiengines['response_code'] == 0):
-            print('病毒家族：', rejson_multiengines['data']
-                  ['multiengines']['malware_family'])
-            workSheet.cell(
-                row=rowNum, column=6).value = str(rejson_multiengines['data']['multiengines']['malware_family'])
+        workSheet.cell(row=rowNum, column=3).value = levelMeans
+        print('检测标签为：', rejson_multiengines['data']['multiengines']['malware_type'])
+        workSheet.cell(row=rowNum, column=4).value = str(rejson_multiengines['data']['multiengines']['malware_type'])
+        print('反病毒扫描引擎检出率:',rejson_multiengines['data']['multiengines']['positives'])
+        workSheet.cell(row=rowNum, column=5).value = rejson_multiengines['data']['multiengines']['positives']
+        print('病毒家族：', rejson_multiengines['data']['multiengines']['malware_family'])
+        workSheet.cell(row=rowNum, column=6).value = str(rejson_multiengines['data']['multiengines']['malware_family'])
 
 
 def loadMD5(xlsPath):
@@ -77,4 +68,5 @@ def loadMD5(xlsPath):
 
 
 if __name__ == '__main__':
-    loadMD5('d:/MD5.xlsx')
+    loadMD5('这里放文件的完整路径/MD5.xlsx')
+
